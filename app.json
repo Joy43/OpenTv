@@ -1,0 +1,74 @@
+{
+  "expo": {
+    "name": "OpenTv",
+    "slug": "opentv",
+    "version": "1.4.0",
+    "orientation": "default",
+    "icon": "./assets/images/icon.png",
+    "scheme": "opentvplayer",
+    "userInterfaceStyle": "automatic",
+    "newArchEnabled": true,
+    "jsEngine": "hermes",
+    "ios": {
+      "supportsTablet": true,
+      "bundleIdentifier": "com.opentv.app"
+    },
+    "android": {
+      "adaptiveIcon": {
+        "backgroundColor": "#0A1628",
+        "foregroundImage": "./assets/images/android-icon-foreground.png",
+        "monochromeImage": "./assets/images/android-icon-monochrome.png"
+      },
+      "edgeToEdgeEnabled": true,
+      "predictiveBackGestureEnabled": false,
+      "package": "com.opentv.app",
+      "jsEngine": "hermes",
+      "permissions": ["REQUEST_INSTALL_PACKAGES"]
+    },
+    "web": {
+      "output": "single",
+      "favicon": "./assets/images/icon.png"
+    },
+    "plugins": [
+      [
+        "@react-native-tvos/config-tv",
+        {
+          "isTV": true,
+          "androidTVBanner": "./assets/images/android-tv-banner.png"
+        }
+      ],
+      ["./plugins/withNetworkSecurityConfig", {}],
+      ["./modules/tv-channel/plugin"],
+      ["./modules/tv-player/plugin"],
+      [
+        "expo-splash-screen",
+        {
+          "image": "./assets/images/splash-icon.png",
+          "imageWidth": 250,
+          "resizeMode": "contain",
+          "backgroundColor": "#0A1628",
+          "dark": {
+            "backgroundColor": "#0A1628"
+          }
+        }
+      ],
+      "expo-web-browser",
+      [
+        "expo-screen-orientation",
+        {
+          "initialOrientation": "DEFAULT"
+        }
+      ],
+      "expo-font"
+    ],
+    "experiments": {
+      "reactCompiler": true
+    },
+    "extra": {
+      "eas": {
+        "projectId": "0f6c48a8-8b6b-4cbd-8839-cb7ac433c62f"
+      }
+    },
+    "owner": "pavan82k"
+  }
+}
