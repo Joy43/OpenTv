@@ -34,6 +34,7 @@ import { ThemedText } from "@/components/ThemedText";
 import { SearchBar } from "@/components/SearchBar";
 import { ChannelCardHorizontal } from "@/components/ChannelCardHorizontal";
 import { EmptyState } from "@/components/EmptyState";
+import { CategoryChip } from "@/components/CategoryChip";
 import { usePlaylist } from "@/context/PlaylistContext";
 import { useThemeContext } from "@/context/ThemeContext";
 import { useResponsive } from "@/hooks/useResponsive";
@@ -259,7 +260,6 @@ export default function ChannelsScreen() {
     toggleFavorite,
     toggleFavoriteCategory,
     isCategoryFavorite,
-    searchChannels,
     settings,
     updateSettings,
   } = usePlaylist();
@@ -277,6 +277,21 @@ export default function ChannelsScreen() {
   const drawerTranslate = useSharedValue(-DRAWER_WIDTH);
   const backdropOpacity = useSharedValue(0);
   const lastLeftPressTime = useRef<number>(0);
+
+  const listOpacity = useSharedValue(1);
+  const listTranslateY = useSharedValue(0);
+
+  useEffect(() => {
+    listOpacity.value = 0;
+    listTranslateY.value = 15;
+    listOpacity.value = withTiming(1, { duration: 300 });
+    listTranslateY.value = withTiming(0, { duration: 300 });
+  }, [selectedCategory, debouncedSearchQuery]);
+
+  const listAnimatedStyle = useAnimatedStyle(() => ({
+    opacity: listOpacity.value,
+    transform: [{ translateY: listTranslateY.value }],
+  }));
 
   const categories = useMemo(() => {
     if (!playlist) return ["All"];
@@ -316,16 +331,22 @@ export default function ChannelsScreen() {
   const filteredChannels = useMemo(() => {
     if (!playlist) return [];
 
-    if (debouncedSearchQuery.trim()) {
-      return searchChannels(debouncedSearchQuery);
-    }
-
+    let channels = playlist.channels;
     if (selectedCategory !== "All") {
-      return playlist.channels.filter((ch) => ch.group === selectedCategory);
+      channels = channels.filter((ch) => ch.group === selectedCategory);
     }
 
-    return playlist.channels;
-  }, [playlist, debouncedSearchQuery, selectedCategory, searchChannels]);
+    if (debouncedSearchQuery.trim()) {
+      const lowerQuery = debouncedSearchQuery.toLowerCase();
+      channels = channels.filter(
+        (ch) =>
+          ch.name.toLowerCase().includes(lowerQuery) ||
+          ch.group.toLowerCase().includes(lowerQuery),
+      );
+    }
+
+    return channels;
+  }, [playlist, debouncedSearchQuery, selectedCategory]);
 
   const openDrawer = useCallback(() => {
     setDrawerOpen(true);
@@ -394,6 +415,14 @@ export default function ChannelsScreen() {
   const handleSearchChange = useCallback((query: string) => {
     setSearchQuery(query);
   }, []);
+
+  const handleClearAllFilters = useCallback(() => {
+    setSearchQuery("");
+    setSelectedCategory("All");
+    if (settings.rememberLastCategory) {
+      updateSettings({ lastCategory: "All" });
+    }
+  }, [settings.rememberLastCategory, updateSettings]);
 
   const handleCategoryFavoritePress = useCallback(
     async (category: string, e: any) => {
@@ -610,21 +639,64 @@ export default function ChannelsScreen() {
             />
           </View>
         </View>
-        <View style={styles.selectedCategoryRow}>
-          <ThemedText
-            type="body"
-            numberOfLines={1}
-            style={[styles.selectedCategoryText, { fontWeight: "600" }]}
+        <View style={styles.filterRowContainer}>
+          {(selectedCategory !== "All" || searchQuery.trim() !== "") && (
+            <Pressable
+              onPress={handleClearAllFilters}
+              focusable={true}
+              style={({ pressed }) => [
+                styles.clearButton,
+                { backgroundColor: theme.backgroundSecondary },
+                pressed && { opacity: 0.8 },
+              ]}
+              testID="clear-filters-button"
+            >
+              <Ionicons
+                name="close-circle-outline"
+                size={18}
+                color={Colors.dark.primary}
+              />
+              <ThemedText
+                type="small"
+                style={{
+                  color: Colors.dark.primary,
+                  fontWeight: "600",
+                  marginLeft: 4,
+                }}
+              >
+                Clear
+              </ThemedText>
+            </Pressable>
+          )}
+          <ScrollView
+            horizontal
+            showsHorizontalScrollIndicator={false}
+            contentContainerStyle={styles.categoriesScrollContent}
+            style={styles.categoriesScrollView}
           >
-            {selectedCategory}
-          </ThemedText>
-          <ThemedText type="small" style={{ color: theme.textSecondary }}>
-            {categoryChannelCounts[selectedCategory] || 0} channels
-          </ThemedText>
+            {categories.map((cat) => {
+              const isSelected = selectedCategory === cat;
+              const isFav = isCategoryFavorite(cat);
+              const count = categoryChannelCounts[cat] || 0;
+
+              return (
+                <CategoryChip
+                  key={cat}
+                  label={cat}
+                  isActive={isSelected}
+                  count={count}
+                  isFavorite={isFav}
+                  onPress={() => handleCategoryChange(cat)}
+                  onFavoritePress={() => handleCategoryFavoritePress(cat, {})}
+                  showFavoriteButton={false}
+                />
+              );
+            })}
+          </ScrollView>
         </View>
       </View>
 
-      <View style={styles.listContainer}>
+      <Animated.View style={[styles.listContainer, listAnimatedStyle]}>
         <FlashList<Channel>
           key={`grid-${gridColumns}`}
           data={filteredChannels}
@@ -643,7 +715,7 @@ export default function ChannelsScreen() {
           ItemSeparatorComponent={ItemSeparator}
           showsVerticalScrollIndicator={false}
         />
-      </View>
+      </Animated.View>
 
       <Modal
         visible={drawerOpen}
@@ -740,16 +812,29 @@ const styles = StyleSheet.create({
   searchContainerCompact: {
     maxWidth: 300,
   },
-  selectedCategoryRow: {
+  filterRowContainer: {
     flexDirection: "row",
     alignItems: "center",
-    justifyContent: "space-between",
     marginTop: Spacing.sm,
     paddingHorizontal: Spacing.xs,
   },
-  selectedCategoryText: {
+  categoriesScrollView: {
     flex: 1,
-    marginRight: Spacing.md,
+  },
+  categoriesScrollContent: {
+    paddingRight: Spacing.md,
+    alignItems: "center",
+  },
+  clearButton: {
+    flexDirection: "row",
+    alignItems: "center",
+    paddingHorizontal: Spacing.sm,
+    paddingVertical: Spacing.xs,
+    borderRadius: BorderRadius.full,
+    borderWidth: 1,
+    borderColor: Colors.dark.primary + "30",
+    marginRight: Spacing.xs,
+    height: 34,
   },
   listContainer: {
     flex: 1,

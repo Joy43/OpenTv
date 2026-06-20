@@ -18,6 +18,253 @@ function stableChannelId(url: string): string {
   return "ch_" + h.toString(36);
 }
 
+function autoGroupChannel(channelName: string, parsedGroup?: string): string {
+  const group = (parsedGroup || "").trim();
+  const name = channelName.toLowerCase();
+  const groupLower = group.toLowerCase();
+
+  const matches = (str: string, keywords: string[]) => {
+    return keywords.some((keyword) => str.includes(keyword));
+  };
+
+  // Keywords lists
+  const sportsKeywords = [
+    "sport",
+    "espn",
+    "football",
+    "soccer",
+    "cricket",
+    "nba",
+    "nfl",
+    "golf",
+    "ufc",
+    "wwe",
+    "tennis",
+    "match",
+    "racing",
+    "be in",
+    "bein",
+    "sky sp",
+    "supersport",
+    "arena",
+    "athletics",
+    "basketball",
+  ];
+  const moviesKeywords = [
+    "movie",
+    "cinema",
+    "hbo",
+    "action",
+    "film",
+    "thriller",
+    "cine",
+    "star gold",
+    "sony max",
+    "zee cinema",
+    "premium play",
+    "hallmark",
+    "paramount",
+    "box office",
+    "blockbusters",
+    "movies",
+  ];
+  const musicKeywords = [
+    "music",
+    "mtv",
+    "radio",
+    "song",
+    "melody",
+    "rock",
+    "pop",
+    "jazz",
+    "vh1",
+    "tunes",
+    "musical",
+  ];
+  const newsKeywords = [
+    "news",
+    "cnn",
+    "bbc",
+    "msnbc",
+    "fox",
+    "cnbc",
+    "al jazeera",
+    "reuters",
+    "bloomberg",
+    "weather",
+    "cctv",
+    "euronews",
+    "sky news",
+    "press",
+    "daily",
+  ];
+  const kidsKeywords = [
+    "kid",
+    "cartoon",
+    "disney",
+    "nickelodeon",
+    "nick",
+    "junior",
+    "boomer",
+    "toon",
+    "baby",
+    "anime",
+    "discovery kids",
+    "family",
+    "kids",
+  ];
+  const docKeywords = [
+    "docu",
+    "discovery",
+    "national geo",
+    "nat geo",
+    "history",
+    "science",
+    "animal",
+    "nature",
+    "wild",
+    "space",
+    "earth",
+    "curiosity",
+    "planet",
+    "geo",
+    "travel",
+    "adventure",
+  ];
+  const entKeywords = [
+    "show",
+    "comedy",
+    "ent",
+    "reality",
+    "star plus",
+    "colors",
+    "sony",
+    "zee",
+    "drama",
+    "hgtv",
+    "tlc",
+    "food",
+    "lifestyle",
+    "fashion",
+    "leisure",
+    "premium",
+    "gold",
+    "series",
+    "serial",
+    "style",
+  ];
+  const genKeywords = [
+    "general",
+    "main",
+    "basic",
+    "channel",
+    "local",
+    "broadcast",
+    "public",
+    "network",
+    "general tv",
+    "mixed",
+    "variety",
+    "standard",
+  ];
+  const intKeywords = [
+    "international",
+    "global",
+    "world",
+    "foreign",
+    "french",
+    "spanish",
+    "arabic",
+    "hindi",
+    "german",
+    "italian",
+    "russian",
+    "turkish",
+    "asian",
+    "european",
+    "latam",
+    "int",
+    "globe",
+  ];
+  const fitKeywords = [
+    "fitness",
+    "health",
+    "gym",
+    "yoga",
+    "workout",
+    "wellness",
+    "fit",
+    "medical",
+    "exercise",
+    "aerobics",
+    "body",
+    "mind",
+    "healthy",
+  ];
+
+  const xxxKeywords = [
+    "xxx",
+    "adult",
+    "erotic",
+    "pink",
+    "porn",
+    "18+",
+    "redlight",
+    "red light",
+    "sensual",
+    "for adult",
+    "hustler",
+    "playboy",
+    "penthouse",
+    "dorcel",
+    "brazzers",
+    "xx",
+  ];
+
+  const hasSexWord = (str: string) => {
+    const tokens = str.split(/[\s\-_\.\/]+/);
+    return (
+      tokens.includes("sex") ||
+      tokens.includes("sexo") ||
+      tokens.includes("sexy") ||
+      tokens.includes("sexys")
+    );
+  };
+
+  // Try matching against group title first
+  if (group && groupLower !== "uncategorized") {
+    if (matches(groupLower, xxxKeywords) || hasSexWord(groupLower)) return "🔞 XXX";
+    if (matches(groupLower, sportsKeywords)) return "⚽ Sports";
+    if (matches(groupLower, moviesKeywords)) return "🎬 Movies";
+    if (matches(groupLower, musicKeywords)) return "🎵 Music";
+    if (matches(groupLower, newsKeywords)) return "📰 News";
+    if (matches(groupLower, kidsKeywords)) return "👶 Kids";
+    if (matches(groupLower, docKeywords)) return "🌍 Documentary";
+    if (matches(groupLower, entKeywords)) return "🎭 Entertainment";
+    if (matches(groupLower, genKeywords)) return "📺 General TV";
+    if (matches(groupLower, intKeywords)) return "📡 International";
+    if (matches(groupLower, fitKeywords)) return "🏋️ Fitness / Health";
+
+    // If custom group exists but didn't match standard keywords, preserve it as-is
+    return group;
+  }
+
+  // Fallback to matching against channel name keywords
+  if (matches(name, xxxKeywords) || hasSexWord(name)) return "🔞 XXX";
+  if (matches(name, sportsKeywords)) return "⚽ Sports";
+  if (matches(name, moviesKeywords)) return "🎬 Movies";
+  if (matches(name, musicKeywords)) return "🎵 Music";
+  if (matches(name, newsKeywords)) return "📰 News";
+  if (matches(name, kidsKeywords)) return "👶 Kids";
+  if (matches(name, docKeywords)) return "🌍 Documentary";
+  if (matches(name, entKeywords)) return "🎭 Entertainment";
+  if (matches(name, genKeywords)) return "📺 General TV";
+  if (matches(name, intKeywords)) return "📡 International";
+  if (matches(name, fitKeywords)) return "🏋️ Fitness / Health";
+
+  return "Uncategorized";
+}
+
 function parseDRM(
   lines: string[],
   currentIndex: number,
@@ -211,7 +458,10 @@ export function parseM3U(
         name: currentChannel.name || "Unknown Channel",
         url: cleanUrl,
         logo: currentChannel.logo,
-        group: currentChannel.group || "Uncategorized",
+        group: autoGroupChannel(
+          currentChannel.name || "Unknown Channel",
+          currentChannel.group,
+        ),
         tvgId: currentChannel.tvgId,
         tvgName: currentChannel.tvgName,
         quality: currentChannel.quality,
@@ -334,7 +584,10 @@ export function parsePLS(
           name: currentTitle || "Unknown Channel",
           url: cleanUrl,
           logo: undefined,
-          group: currentGroup || "Uncategorized",
+          group: autoGroupChannel(
+            currentTitle || "Unknown Channel",
+            currentGroup,
+          ),
           tvgId: undefined,
           tvgName: undefined,
           quality: undefined,
@@ -430,7 +683,10 @@ export function parseXSPF(
         name: titleMatch ? titleMatch[1].trim() : "Unknown Channel",
         url: cleanUrl,
         logo: imageMatch ? imageMatch[1].trim() : undefined,
-        group,
+        group: autoGroupChannel(
+          titleMatch ? titleMatch[1].trim() : "Unknown Channel",
+          group,
+        ),
         tvgId: undefined,
         tvgName: undefined,
         quality: undefined,
@@ -529,7 +785,10 @@ function parseJSONArray(
       name: item.name || item.title || "Unknown Channel",
       url: cleanUrl,
       logo: item.logo || item.image || item.tvgLogo || undefined,
-      group: item.group || item.category || item.groupTitle || "Uncategorized",
+      group: autoGroupChannel(
+        item.name || item.title || "Unknown Channel",
+        item.group || item.category || item.groupTitle,
+      ),
       tvgId: item.tvgId || item.epgId || undefined,
       tvgName: item.tvgName || undefined,
       quality: item.quality || undefined,

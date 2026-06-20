@@ -505,8 +505,8 @@ class ExoPlayerController(
         val okHttpClient = sharedOkHttpClient.newBuilder()
             .addInterceptor { chain ->
                 val req = chain.request().newBuilder()
-                    .addHeader("User-Agent", DEFAULT_USER_AGENT)
-                currentHeaders.forEach { (k, v) -> req.addHeader(k, v) }
+                    .header("User-Agent", DEFAULT_USER_AGENT)
+                currentHeaders.forEach { (k, v) -> req.header(k, v) }
                 chain.proceed(req.build())
             }
             .build()
