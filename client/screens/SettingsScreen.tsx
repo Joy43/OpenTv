@@ -21,6 +21,7 @@ import { NativeStackNavigationProp } from "@react-navigation/native-stack";
 import { Ionicons } from "@expo/vector-icons";
 import * as Haptics from "expo-haptics";
 import * as IntentLauncher from "expo-intent-launcher";
+import * as WebBrowser from "expo-web-browser";
 
 import { ThemedView } from "@/components/ThemedView";
 import { ThemedText } from "@/components/ThemedText";
@@ -696,9 +697,9 @@ export default function SettingsScreen() {
               <SettingsRow
                 icon="code-slash"
                 title="Developer"
-                subtitle="ExWhyZed9"
+                subtitle="A Developer"
                 value=""
-                onPress={() => Linking.openURL("https://github.com/ExWhyZed9")}
+                onPress={() => WebBrowser.openBrowserAsync("https://www.ssjoy.me")}
                 showChevron
               />
               {updateInfo?.available ? (

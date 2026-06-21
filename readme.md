@@ -46,16 +46,14 @@ It is designed for large playlists, fast channel browsing, smooth playback, and 
   <img src="screenshots/player-settings.jpg" width="600" alt="Player Settings" />
 </p>
 
-
 ---
-
 
 ## 🎯 Supported Platforms
 
 - ✅ **Android**
 - ✅ **Android TV**
 
-*Note: iOS and Web are not primary targets for this project.*
+_Note: iOS and Web are not primary targets for this project._
 
 ---
 
@@ -146,4 +144,16 @@ This project is licensed under the MIT License.
 
 If you find OpenTv useful, consider giving it a ⭐ on GitHub!
 
-**Author:** ExWhyZed9
+## Build APK
+
+```bash
+cd android && ./gradlew assembleRelease
+```
+
+## download
+
+https://expo.dev/artifacts/eas/A3KHOTmiRU4Cy2LzkIbQ1dgjbezF8szbFzJRFjXwp-A.apk
+
+
+# update 
+eas build --platform android --profile preview

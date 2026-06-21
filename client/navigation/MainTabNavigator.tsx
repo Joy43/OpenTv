@@ -15,6 +15,7 @@ import * as Device from "expo-device";
 import ChannelsScreen from "@/screens/ChannelsScreen";
 import FavoritesScreen from "@/screens/FavoritesScreen";
 import SettingsScreen from "@/screens/SettingsScreen";
+import DeveloperScreen from "@/screens/DeveloperScreen";
 import { ThemedText } from "@/components/ThemedText";
 import { useResponsive } from "@/hooks/useResponsive";
 import { useTheme } from "@/hooks/useTheme";
@@ -25,10 +26,11 @@ const isTV = Platform.isTV;
 export type MainTabParamList = {
   Channels: undefined;
   Favorites: undefined;
+  Developer: undefined;
   Settings: undefined;
 };
 
-type ScreenName = "Channels" | "Favorites" | "Settings";
+type ScreenName = "Channels" | "Favorites" | "Developer" | "Settings";
 
 type IoniconsName = keyof typeof Ionicons.glyphMap;
 
@@ -216,6 +218,7 @@ export default function MainTabNavigator() {
 
   const channelsRef = useRef<View>(null);
   const favoritesRef = useRef<View>(null);
+  const developerRef = useRef<View>(null);
   const settingsRef = useRef<View>(null);
 
   const { width, height } = Dimensions.get("window");
@@ -235,6 +238,8 @@ export default function MainTabNavigator() {
         return <ChannelsScreen />;
       case "Favorites":
         return <FavoritesScreen />;
+      case "Developer":
+        return <DeveloperScreen />;
       case "Settings":
         return <SettingsScreen />;
       default:
@@ -298,6 +303,17 @@ export default function MainTabNavigator() {
               compact={compact}
               itemRef={favoritesRef}
               nextFocusUp={channelsRef}
+              nextFocusDown={developerRef}
+            />
+            <SidebarItem
+              icon="code-slash-outline"
+              iconActive="code-slash"
+              label="Developer"
+              isActive={currentScreen === "Developer"}
+              onPress={() => handleScreenChange("Developer")}
+              compact={compact}
+              itemRef={developerRef}
+              nextFocusUp={favoritesRef}
               nextFocusDown={settingsRef}
             />
             <SidebarItem
@@ -308,7 +324,7 @@ export default function MainTabNavigator() {
               onPress={() => handleScreenChange("Settings")}
               compact={compact}
               itemRef={settingsRef}
-              nextFocusUp={favoritesRef}
+              nextFocusUp={developerRef}
             />
           </View>
         </View>
@@ -361,6 +377,16 @@ export default function MainTabNavigator() {
           onPress={() => handleScreenChange("Favorites")}
           itemRef={favoritesRef}
           nextFocusLeft={channelsRef}
+          nextFocusRight={developerRef}
+        />
+        <BottomTabItem
+          icon="code-slash-outline"
+          iconActive="code-slash"
+          label="Developer"
+          isActive={currentScreen === "Developer"}
+          onPress={() => handleScreenChange("Developer")}
+          itemRef={developerRef}
+          nextFocusLeft={favoritesRef}
           nextFocusRight={settingsRef}
         />
         <BottomTabItem
@@ -370,7 +396,7 @@ export default function MainTabNavigator() {
           isActive={currentScreen === "Settings"}
           onPress={() => handleScreenChange("Settings")}
           itemRef={settingsRef}
-          nextFocusLeft={favoritesRef}
+          nextFocusLeft={developerRef}
         />
       </View>
     </View>

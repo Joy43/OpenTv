@@ -23,7 +23,9 @@
       "predictiveBackGestureEnabled": false,
       "package": "com.opentv.app",
       "jsEngine": "hermes",
-      "permissions": ["REQUEST_INSTALL_PACKAGES"]
+      "permissions": [
+        "REQUEST_INSTALL_PACKAGES"
+      ]
     },
     "web": {
       "output": "single",
@@ -37,9 +39,16 @@
           "androidTVBanner": "./assets/images/android-tv-banner.png"
         }
       ],
-      ["./plugins/withNetworkSecurityConfig", {}],
-      ["./modules/tv-channel/plugin"],
-      ["./modules/tv-player/plugin"],
+      [
+        "./plugins/withNetworkSecurityConfig",
+        {}
+      ],
+      [
+        "./modules/tv-channel/plugin"
+      ],
+      [
+        "./modules/tv-player/plugin"
+      ],
       [
         "expo-splash-screen",
         {
@@ -66,9 +75,9 @@
     },
     "extra": {
       "eas": {
-        "projectId": "0f6c48a8-8b6b-4cbd-8839-cb7ac433c62f"
+        "projectId": "bc49615e-a9b2-42ba-886e-255e2a2190d0"
       }
     },
-    "owner": "pavan82k"
+    "owner": "ssjoy43"
   }
 }
