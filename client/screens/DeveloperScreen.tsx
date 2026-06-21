@@ -70,10 +70,7 @@ export default function DeveloperScreen() {
               type="body"
               style={[styles.heroBio, { color: theme.textSecondary }]}
             >
-              Architecture Specialist focused on high-performance media delivery
-              systems. Mastering the intersection of React Native (JSI), Native
-              Android (Kotlin), and complex system architectures to deliver
-              cinematic experiences on every screen.
+             Hello everyone, I am Shahsultan Islam Joy, a Full Stack Software Engineer focused on building scalable and high-performance applications. I work at the intersection of React Native (JSI), Native Android (Kotlin), and modern system architecture to deliver smooth, cinematic user experiences across all devices.
             </ThemedText>
 
             {/* Profile Grayscale Image */}
@@ -272,7 +269,7 @@ export default function DeveloperScreen() {
           {/* Social Links Row */}
           <View style={styles.linksRow}>
             <TVFocusablePressable
-              onPress={() => handleOpenLink("https://github.com")}
+              onPress={() => handleOpenLink("https://github.com/Joy43")}
               baseStyle={styles.linkButton}
               focusedStyle={StyleSheet.flatten([styles.linkButtonFocused, { backgroundColor: theme.primary + "15" }])}
               accessibilityRole="link"

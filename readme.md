@@ -157,3 +157,5 @@ https://expo.dev/artifacts/eas/A3KHOTmiRU4Cy2LzkIbQ1dgjbezF8szbFzJRFjXwp-A.apk
 
 # update 
 eas build --platform android --profile preview
+
+https://expo.dev/artifacts/eas/PQWC_EbKpvXUsj9QToW-XIE-yaaPaJfAZJeLfJu4Y0k.apkß
