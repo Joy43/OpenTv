@@ -775,12 +775,9 @@ export const AdvancedVideoPlayer = React.memo(function AdvancedVideoPlayer({
     if (!isTV) return;
 
     // react-native-tvos uses a new object-based TVEventHandler API.
-    // Import directly from the library path — it is NOT exported from the
-    // main react-native package index.
     let TVEventHandler: any;
     try {
-      TVEventHandler =
-        require("react-native/Libraries/Components/TV/TVEventHandler").default;
+      TVEventHandler = require("react-native").TVEventHandler;
     } catch (_) {
       return;
     }

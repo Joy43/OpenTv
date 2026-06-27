@@ -34,7 +34,7 @@ export async function checkForUpdate(): Promise<UpdateInfo | null> {
   try {
     const response = await fetch(GITHUB_RELEASES_URL);
     if (!response.ok) {
-      console.error("Failed to fetch latest release");
+      // Silently return if GitHub API rate limits or no release exists
       return null;
     }
 

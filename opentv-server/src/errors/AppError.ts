@@ -1,0 +1,28 @@
+class AppError extends Error {
+  public statusCode: number;
+  constructor(statusCode: number, message: string, stack = "") {
+    super(message);
+    this.statusCode = statusCode;
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this);
+    }
+  }
+}
+
+export default AppError;
+
+export class ApiError extends Error {
+  public statusCode: number;
+
+  constructor(statusCode: number, message: string, stack = "") {
+    super(message);
+    this.statusCode = statusCode;
+    if (stack) {
+      this.stack = stack;
+    } else {
+      Error.captureStackTrace(this, this.constructor);
+    }
+  }
+}
