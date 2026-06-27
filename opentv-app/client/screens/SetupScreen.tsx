@@ -70,8 +70,10 @@ export default function SetupScreen() {
         const response = await axios.get(
           "https://opentv-server.vercel.app/api/project"
         );
+        console.log("Playlist URL:", response.data.data[0]?.tvurl);
         if (response.data && Array.isArray(response.data.data)) {
           setServerPlaylists(response.data.data);
+          console.log(response.data.data)
           // Auto load the dynamic playlist immediately, but only once!
           if (response.data.data.length > 0 && !hasAutoLoadedRef.current) {
             hasAutoLoadedRef.current = true;
