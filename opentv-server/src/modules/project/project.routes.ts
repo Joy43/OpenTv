@@ -43,7 +43,7 @@ const router=express.Router();
  *       200:
  *         description: Project updated successfully
  */
-router.put('/:projectId',projectController.UpdateProject);
+router.put('/:projectId', auth(UserRole.USER, UserRole.ADMIN, UserRole.PREMIUM), projectController.UpdateProject);
 
 /**
  * @swagger
@@ -127,6 +127,6 @@ router.get("/:id",projectController.getSingleProject);
  *       200:
  *         description: Project deleted successfully
  */
-router.delete('/:projectId',projectController.DeleteProject);
+router.delete('/:projectId', auth(UserRole.USER, UserRole.ADMIN, UserRole.PREMIUM), projectController.DeleteProject);
 
 export const Projectrouter=router;

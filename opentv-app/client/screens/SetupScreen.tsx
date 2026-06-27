@@ -1,4 +1,4 @@
-import React, { useState, useRef } from "react";
+import React, { useState, useRef, useEffect } from "react";
 import {
   StyleSheet,
   View,
@@ -26,6 +26,7 @@ import { usePlaylist } from "@/context/PlaylistContext";
 import { useOrientation } from "@/hooks/useOrientation";
 import { Colors, Spacing, BorderRadius } from "@/constants/theme";
 import { RootStackParamList } from "@/navigation/RootStackNavigator";
+import axios from "axios";
 
 type SetupRouteProp = RouteProp<RootStackParamList, "Setup">;
 type SetupNavigationProp = NativeStackNavigationProp<
@@ -58,6 +59,43 @@ export default function SetupScreen() {
   const [isFileFocused, setIsFileFocused] = useState(false);
   const [isCancelFocused, setIsCancelFocused] = useState(false);
 
+  // Server Playlists State
+  const [serverPlaylists, setServerPlaylists] = useState<any[]>([]);
+  const [loadingServerPlaylists, setLoadingServerPlaylists] = useState(true);
+  const hasAutoLoadedRef = useRef(false);
+
+  useEffect(() => {
+    const fetchPlaylists = async () => {
+      try {
+        const response = await axios.get(
+          "https://opentv-server.vercel.app/api/project"
+        );
+        if (response.data && Array.isArray(response.data.data)) {
+          setServerPlaylists(response.data.data);
+          // Auto load the dynamic playlist immediately, but only once!
+          if (response.data.data.length > 0 && !hasAutoLoadedRef.current) {
+            hasAutoLoadedRef.current = true;
+            const firstPlaylist = response.data.data[0];
+            handleLoadFromApi(firstPlaylist.title, firstPlaylist.tvurl);
+          }
+        } 
+      } catch (err) {
+        console.warn("Failed to fetch server playlists", err);
+      } finally {
+        setLoadingServerPlaylists(false);
+      }
+    };
+    
+    // Initial fetch
+    fetchPlaylists();
+    
+    // Fetch every 1 minute (60,000 milliseconds)
+    const intervalId = setInterval(fetchPlaylists, 60000);
+    
+    // Cleanup interval on unmount
+    return () => clearInterval(intervalId);
+  }, []);
+
   const isCompact = height < 500;
   const isTVDevice = Platform.isTV;
 
@@ -67,6 +105,35 @@ export default function SetupScreen() {
     setShowLoadingModal(false);
     setLoadingType(null);
     setLoadingProgress("");
+  };
+
+  const handleLoadFromApi = async (apiTitle: string, apiTvUrl: string) => {
+    try {
+      setError(null);
+      setLoadingType("url");
+      setShowLoadingModal(true);
+      abortRef.current = false;
+      if (!isTVDevice) Haptics.impactAsync(Haptics.ImpactFeedbackStyle.Medium);
+
+      setLoadingProgress("Fetching playlist...");
+
+      await loadPlaylistFromUrl(apiTvUrl.trim(), apiTitle.trim());
+      if (!isTVDevice)
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Success);
+      setShowLoadingModal(false);
+      if (fromSettings) {
+        navigation.goBack();
+      } else {
+        navigation.reset({ index: 0, routes: [{ name: "Main" }] });
+      }
+    } catch (err: any) {
+      setError(err.message || "Failed to load playlist");
+      if (!isTVDevice)
+        Haptics.notificationAsync(Haptics.NotificationFeedbackType.Error);
+      setShowLoadingModal(false);
+    } finally {
+      setLoadingType(null);
+    }
   };
 
   const handleLoadFromUrl = async () => {
@@ -258,12 +325,7 @@ export default function SetupScreen() {
               isLandscape ? styles.formWide : styles.formNarrow,
             ]}
           >
-            <View
-              style={[
-                styles.inputSection,
-                { maxWidth: isLandscape ? 320 : 400 },
-              ]}
-            >
+            <View style={[styles.inputSection, { maxWidth: isLandscape ? 320 : 400, marginBottom: Spacing.xl }]}>
               <ThemedText
                 type="h4"
                 style={[
@@ -271,158 +333,24 @@ export default function SetupScreen() {
                   isCompact && styles.sectionTitleCompact,
                 ]}
               >
-                Playlist Name
+                Featured Playlists ({serverPlaylists.length})
               </ThemedText>
-              <View
-                style={[
-                  styles.inputContainer,
-                  {
-                    backgroundColor: theme.backgroundDefault,
-                    borderColor: theme.backgroundSecondary,
-                  },
-                  isCompact && styles.inputContainerCompact,
-                ]}
-              >
-                <Ionicons
-                  name="bookmark"
-                  size={18}
-                  color={theme.textSecondary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  value={playlistName}
-                  onChangeText={setPlaylistName}
-                  placeholder="My Playlist"
-                  placeholderTextColor={theme.textSecondary}
-                  style={[styles.input, { color: theme.text }]}
-                  autoCapitalize="words"
-                  autoCorrect={false}
-                  returnKeyType="next"
-                  editable={!isLoadingPlaylist}
-                  showSoftInputOnFocus={true}
-                  testID="name-input"
-                />
-              </View>
-
-              <ThemedText
-                type="h4"
-                style={[
-                  styles.sectionTitle,
-                  isCompact && styles.sectionTitleCompact,
-                ]}
-              >
-                Enter Playlist URL
-              </ThemedText>
-              <View
-                style={[
-                  styles.inputContainer,
-                  {
-                    backgroundColor: theme.backgroundDefault,
-                    borderColor: theme.backgroundSecondary,
-                  },
-                  isCompact && styles.inputContainerCompact,
-                ]}
-              >
-                <Ionicons
-                  name="link"
-                  size={18}
-                  color={theme.textSecondary}
-                  style={styles.inputIcon}
-                />
-                <TextInput
-                  value={url}
-                  onChangeText={setUrl}
-                  placeholder="https://example.com/playlist"
-                  placeholderTextColor={theme.textSecondary}
-                  style={[styles.input, { color: theme.text }]}
-                  autoCapitalize="none"
-                  autoCorrect={false}
-                  keyboardType="url"
-                  returnKeyType="done"
-                  onSubmitEditing={handleLoadFromUrl}
-                  editable={!isLoadingPlaylist}
-                  showSoftInputOnFocus={true}
-                  testID="url-input"
-                />
-              </View>
-
-              <Button
-                onPress={handleLoadFromUrl}
-                disabled={
-                  isLoadingPlaylist || !url.trim() || !playlistName.trim()
-                }
-                style={[styles.button, isCompact && styles.buttonCompact]}
-                hasTVPreferredFocus={isTVDevice}
-              >
-                {loadingType === "url" ? (
-                  <ActivityIndicator size="small" color={theme.buttonText} />
-                ) : (
-                  "Load Playlist"
-                )}
-              </Button>
-
-              <View
-                style={[
-                  styles.dividerContainer,
-                  isLandscape ? styles.dividerWide : styles.dividerNarrow,
-                ]}
-              >
-                <View
-                  style={[
-                    styles.divider,
-                    { backgroundColor: theme.backgroundSecondary },
-                  ]}
-                />
-                <ThemedText
-                  type="small"
-                  style={[styles.dividerText, { color: theme.textSecondary }]}
-                >
-                  OR
+              {serverPlaylists.length === 0 ? (
+                <ThemedText type="body" style={{ color: theme.textSecondary, marginTop: Spacing.sm }}>
+                  No playlists loaded.
                 </ThemedText>
-                <View
-                  style={[
-                    styles.divider,
-                    { backgroundColor: theme.backgroundSecondary },
-                  ]}
-                />
-              </View>
-
-              <Pressable
-                onPress={handleLoadFromFile}
-                onFocus={() => setIsFileFocused(true)}
-                onBlur={() => setIsFileFocused(false)}
-                disabled={isLoadingPlaylist}
-                focusable={!isLoadingPlaylist}
-                accessibilityLabel="Choose file"
-                accessibilityRole="button"
-                style={
-                  [
-                    styles.fileButton,
-                    {
-                      backgroundColor: theme.backgroundDefault,
-                      borderColor: theme.primary + "40",
-                    },
-                    isCompact && styles.fileButtonCompact,
-                    isFileFocused && styles.fileButtonFocused,
-                  ] as ViewStyle[]
-                }
-                testID="file-picker-btn"
-              >
-                {loadingType === "file" ? (
-                  <ActivityIndicator size="small" color={theme.primary} />
-                ) : (
-                  <>
-                    <Ionicons
-                      name="cloud-upload"
-                      size={22}
-                      color={theme.primary}
-                    />
-                    <ThemedText type="small" style={styles.fileButtonText}>
-                      Choose File
-                    </ThemedText>
-                  </>
-                )}
-              </Pressable>
+              ) : (
+                serverPlaylists.map((project: any) => (
+                  <Button
+                    key={project.id || project.tvurl}
+                    onPress={() => handleLoadFromApi(project.title, project.tvurl)}
+                    disabled={isLoadingPlaylist}
+                    style={[styles.button, isCompact && styles.buttonCompact, { marginBottom: Spacing.sm, backgroundColor: theme.primary }]}
+                  >
+                    {`Load ${project.title}`}
+                  </Button>
+                ))
+              )}
             </View>
           </View>
         </View>

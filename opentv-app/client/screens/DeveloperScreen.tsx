@@ -76,7 +76,7 @@ export default function DeveloperScreen() {
             {/* Profile Grayscale Image */}
             <View style={[styles.imageContainer, { borderColor: theme.backgroundSecondary }]}>
               <Image
-                source={{ uri: "https://avatars.githubusercontent.com/u/88577144?v=4" }}
+                source={{ uri: "https://www.ssjoy.me/assets/ssjoy-DrrQThnw.jpg" }}
                 style={styles.profileImage}
                 contentFit="cover"
               />

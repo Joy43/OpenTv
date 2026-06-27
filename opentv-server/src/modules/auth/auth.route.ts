@@ -26,8 +26,8 @@ const route = Router();
  *               password:
  *                 type: string
  *             example:
- *               email: "user@example.com"
- *               password: "password123"
+ *               email: "user@gmail.com"
+ *               password: "user123456"
  *     responses:
  *       200:
  *         description: Login successful
