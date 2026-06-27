@@ -8,6 +8,10 @@ OpenTv is a modern, lightweight **M3U IPTV player** built with **Expo / React Na
 
 It is designed for large playlists, fast channel browsing, smooth playback, and a clean TV-friendly experience.
 
+### ⚽ World Cup Channels
+We have extracted **1091+ World Cup IPTV channels** with logos and stream URLs! 
+👉 **[View the full World Cup Channel List here!](./worldcup/README.md)**
+
 ---
 
 ## ✨ Features
