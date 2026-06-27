@@ -14,15 +14,15 @@ https://raw.githubusercontent.com/Joy43/OpenTv/main/worldcup/index.m3u
 
 **1. TV Networks Playlist** (1091 Channels)
 ```text
-https://raw.githubusercontent.com/Joy43/OpenTv/main/worldcup/tvnetwork.m3u
+https://raw.githubusercontent.com/Joy43/OpenTv/main/opentv-app/worldcup/tvnetwork.m3u
 ```
 
 **2. World Cup Playlist**
 ```text
-https://raw.githubusercontent.com/Joy43/OpenTv/main/worldcup/WorldCup.m3u
+https://raw.githubusercontent.com/Joy43/OpenTv/main/opentv-app/worldcup/WorldCup.m3u
 ```
 
 **3. Only FIFA Playlist**
 ```text
-https://raw.githubusercontent.com/Joy43/OpenTv/main/worldcup/OnlyFifa.m3u
+https://raw.githubusercontent.com/Joy43/OpenTv/main/opentv-app/worldcup/OnlyFifa.m3u
 ```
