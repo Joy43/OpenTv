@@ -2,6 +2,12 @@
 
 Here is the list of all available TV networks from the playlist.
 
+### 🔗 Master Playlist URL
+You can load all 2,981+ channels at once by adding this master URL to your IPTV player:
+```text
+https://raw.githubusercontent.com/Joy43/OpenTv/main/worldcup/index.m3u
+```
+
 | Logo | Channel Name | Stream URL |
 |------|--------------|------------|
 | <img src="https://imgur.com/79g2kMA.png" width="30" /> | **World Cup A2 🇧🇩** | `http://198.195.239.50:8095/tsports/tracks-v1a1/mono.m3u8` |
