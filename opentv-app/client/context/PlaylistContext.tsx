@@ -9,6 +9,7 @@ import React, {
   ReactNode,
 } from "react";
 import { AppState, AppStateStatus } from "react-native";
+import axios from "axios";
 import { Channel, Playlist } from "@/types/playlist";
 import * as storage from "@/lib/storage";
 import {
@@ -223,6 +224,57 @@ export function PlaylistProvider({ children }: { children: ReactNode }) {
       setFavoriteCategories(savedFavoriteCategories);
       setRecentChannels(savedRecent);
       setSettings(savedSettings);
+
+      // Check if backend has removed all playlists or if we need to auto-load the first one
+      try {
+        const res = await axios.get("https://opentv-server.vercel.app/api/project");
+        if (res.data && Array.isArray(res.data.data)) {
+          const serverData = res.data.data;
+          
+          if (serverData.length === 0) {
+            // Backend has NO data! Wipe local cache so Channels screen correctly shows empty
+            await storage.clearAllData();
+            setPlaylists([]);
+            setActivePlaylistId(null);
+            setPlaylist(null);
+            setFavorites([]);
+            setFavoriteCategories([]);
+            setRecentChannels([]);
+            setIsLoading(false);
+            return; // Exit early so we don't load the old savedActiveId
+          } else if (serverData.length > 0) {
+            // Active Playlist auto selected latest playlist
+            const latestPlaylist = serverData[0];
+            const currentPlaylistInfo = savedPlaylists.find(p => p.id === savedActiveId);
+            
+            // Auto select if no active playlist OR if the latest backend playlist URL is different from current
+            if (!savedActiveId || !currentPlaylistInfo || currentPlaylistInfo.url !== latestPlaylist.tvurl) {
+              try {
+                if (savedActiveId) {
+                  await storage.deletePlaylist(savedActiveId);
+                }
+                
+                const newPlaylist = await fetchAndParsePlaylist(latestPlaylist.tvurl, latestPlaylist.title);
+                await storage.savePlaylist(newPlaylist, "m3u");
+                await storage.setActivePlaylistId(newPlaylist.id);
+                
+                setPlaylist(newPlaylist);
+                setActivePlaylistId(newPlaylist.id);
+                
+                const updatedPlaylists = await storage.getPlaylistList();
+                setPlaylists(updatedPlaylists);
+                
+                setIsLoading(false);
+                return; // Exit early since we just loaded the active playlist!
+              } catch (err) {
+                console.warn("Failed to auto-select latest playlist:", err);
+              }
+            }
+          }
+        }
+      } catch (err) {
+        console.warn("Failed to check backend for empty state on boot", err);
+      }
 
       if (savedActiveId) {
         const savedPlaylist = await storage.getPlaylist(savedActiveId);

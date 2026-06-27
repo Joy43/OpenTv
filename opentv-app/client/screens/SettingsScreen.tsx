@@ -1,4 +1,5 @@
 import React, { useState, useCallback, useEffect } from "react";
+import axios from "axios";
 import {
   StyleSheet,
   View,
@@ -182,6 +183,7 @@ export default function SettingsScreen() {
     clearAllData,
     isLoadingPlaylist,
     refreshPlaylist,
+    loadPlaylistFromUrl,
   } = usePlaylist();
 
   const [showQualityModal, setShowQualityModal] = useState(false);
@@ -190,6 +192,27 @@ export default function SettingsScreen() {
   const [showTextSizeModal, setShowTextSizeModal] = useState(false);
   const [showPlayerEngineModal, setShowPlayerEngineModal] = useState(false);
   const [showPlaylistModal, setShowPlaylistModal] = useState(false);
+  const [serverPlaylists, setServerPlaylists] = useState<any[]>([]);
+  const [loadingServerPlaylists, setLoadingServerPlaylists] = useState(false);
+
+  useEffect(() => {
+    if (showPlaylistModal) {
+      const fetchApi = async () => {
+        setLoadingServerPlaylists(true);
+        try {
+          const res = await axios.get("https://opentv-server.vercel.app/api/project");
+          if (res.data && Array.isArray(res.data.data)) {
+            setServerPlaylists(res.data.data);
+          }
+        } catch (e) {
+          console.warn("Failed to fetch server playlists", e);
+        } finally {
+          setLoadingServerPlaylists(false);
+        }
+      };
+      fetchApi();
+    }
+  }, [showPlaylistModal]);
   const [showDeletePlaylistModal, setShowDeletePlaylistModal] = useState(false);
   const [showClearAllConfirm, setShowClearAllConfirm] = useState(false);
   const [showEditPlaylistModal, setShowEditPlaylistModal] = useState(false);
@@ -533,13 +556,7 @@ export default function SettingsScreen() {
                   showChevron
                 />
               ) : null}
-              <SettingsRow
-                icon="add-circle"
-                title="Add Playlist"
-                subtitle="Add M3U URL or file"
-                onPress={handleAddPlaylist}
-                showChevron
-              />
+
               <SettingsRow
                 icon="refresh"
                 title="Auto-Refresh"
@@ -960,7 +977,11 @@ export default function SettingsScreen() {
             <ThemedText type="h4" style={styles.modalTitle}>
               Playlists
             </ThemedText>
-            {playlists.length === 0 ? (
+            {loadingServerPlaylists ? (
+              <View style={{ padding: Spacing.xl }}>
+                <ActivityIndicator size="large" color={theme.primary} />
+              </View>
+            ) : serverPlaylists.length === 0 ? (
               <ThemedText
                 type="body"
                 style={{
@@ -969,22 +990,25 @@ export default function SettingsScreen() {
                   padding: Spacing.md,
                 }}
               >
-                No playlists saved
+                No playlists found on server
               </ThemedText>
             ) : (
-              playlists.map((p, idx) => (
-                <View key={p.id} style={styles.playlistGroup}>
+              serverPlaylists.map((p, idx) => (
+                <View key={p.id || p.tvurl} style={styles.playlistGroup}>
                   {/* Playlist select row */}
                   <View style={styles.playlistRow}>
                     <FocusablePressable
-                      onPress={() => handlePlaylistSelect(p.id)}
-                      accessibilityLabel={`Select playlist ${p.name}`}
+                      onPress={async () => {
+                        setShowPlaylistModal(false);
+                        await loadPlaylistFromUrl(p.tvurl, p.title);
+                      }}
+                      accessibilityLabel={`Select playlist ${p.title}`}
                       hasTVPreferredFocus={isTV && idx === 0}
                       baseStyle={[
                         styles.playlistItem,
                         {
                           backgroundColor:
-                            p.id === activePlaylistId
+                            playlist?.url === p.tvurl
                               ? theme.primary + "20"
                               : "transparent",
                         },
@@ -996,24 +1020,24 @@ export default function SettingsScreen() {
                           name="list"
                           size={18}
                           color={
-                            p.id === activePlaylistId
+                            playlist?.url === p.tvurl
                               ? theme.primary
                               : theme.textSecondary
                           }
                         />
                         <View style={styles.playlistText}>
                           <ThemedText type="body" numberOfLines={1}>
-                            {p.name}
+                            {p.title}
                           </ThemedText>
                           <ThemedText
                             type="caption"
                             style={{ color: theme.textSecondary }}
                           >
-                            {p.channelCount} channels
+                            Tap to load from server
                           </ThemedText>
                         </View>
                       </View>
-                      {p.id === activePlaylistId ? (
+                      {playlist?.url === p.tvurl ? (
                         <Ionicons
                           name="checkmark"
                           size={20}
@@ -1021,93 +1045,7 @@ export default function SettingsScreen() {
                         />
                       ) : null}
                     </FocusablePressable>
-                    {/* On phone: icon buttons inline */}
-                    {!isTV ? (
-                      <>
-                        <FocusablePressable
-                          onPress={() => handleEditPlaylist(p.id)}
-                          hitSlop={8}
-                          accessibilityLabel={`Edit playlist ${p.name}`}
-                          baseStyle={styles.editButton}
-                          focusedStyle={styles.editButtonFocused}
-                        >
-                          <Ionicons
-                            name="create-outline"
-                            size={18}
-                            color={theme.primary}
-                          />
-                        </FocusablePressable>
-                        <FocusablePressable
-                          onPress={() => {
-                            setPlaylistToDelete(p.id);
-                            setShowPlaylistModal(false);
-                            setShowDeletePlaylistModal(true);
-                          }}
-                          hitSlop={8}
-                          accessibilityLabel={`Delete playlist ${p.name}`}
-                          baseStyle={styles.deleteButton}
-                          focusedStyle={styles.deleteButtonFocused}
-                        >
-                          <Ionicons
-                            name="trash-outline"
-                            size={18}
-                            color={Colors.dark.error}
-                          />
-                        </FocusablePressable>
-                      </>
-                    ) : null}
                   </View>
-                  {/* On TV: full-width Edit / Delete buttons below each row */}
-                  {isTV ? (
-                    <View style={styles.tvPlaylistActions}>
-                      <FocusablePressable
-                        onPress={() => handleEditPlaylist(p.id)}
-                        accessibilityLabel={`Edit playlist ${p.name}`}
-                        baseStyle={styles.tvActionButton}
-                        focusedStyle={styles.tvActionButtonFocused}
-                      >
-                        <Ionicons
-                          name="create-outline"
-                          size={16}
-                          color={theme.primary}
-                        />
-                        <ThemedText
-                          type="small"
-                          style={{
-                            color: theme.primary,
-                            marginLeft: Spacing.xs,
-                          }}
-                        >
-                          Edit
-                        </ThemedText>
-                      </FocusablePressable>
-                      <FocusablePressable
-                        onPress={() => {
-                          setPlaylistToDelete(p.id);
-                          setShowPlaylistModal(false);
-                          setShowDeletePlaylistModal(true);
-                        }}
-                        accessibilityLabel={`Delete playlist ${p.name}`}
-                        baseStyle={styles.tvActionButton}
-                        focusedStyle={styles.tvActionButtonDestructiveFocused}
-                      >
-                        <Ionicons
-                          name="trash-outline"
-                          size={16}
-                          color={Colors.dark.error}
-                        />
-                        <ThemedText
-                          type="small"
-                          style={{
-                            color: Colors.dark.error,
-                            marginLeft: Spacing.xs,
-                          }}
-                        >
-                          Delete
-                        </ThemedText>
-                      </FocusablePressable>
-                    </View>
-                  ) : null}
                 </View>
               ))
             )}
