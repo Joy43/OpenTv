@@ -58,3 +58,70 @@ npm run dev
 cd dashboard
 npm run dev
 ```
+# Build React Native Android App (Expo)
+
+## 1. Navigate to the project
+
+```bash
+cd opentv-app
+```
+
+## 2. Generate the native Android project
+
+```bash
+npx expo prebuild --clean
+```
+
+## 3. Run the app on an Android device/emulator
+
+```bash
+yarn android
+```
+
+or
+
+```bash
+yarn run android
+```
+
+## 4. Build a Preview APK/AAB using EAS (Cloud)
+
+```bash
+eas build -p android --profile preview
+```
+
+## 5. Build locally (requires Android SDK, Java, and NDK if needed)
+
+```bash
+eas build -p android --profile preview --local
+```
+
+## Requirements
+
+- Node.js
+- Yarn
+- Expo CLI
+- EAS CLI
+
+Install EAS CLI if you haven't already:
+
+```bash
+npm install -g eas-cli
+```
+
+Log in to your Expo account:
+
+```bash
+eas login
+```
+
+Configure EAS in your project:
+
+```bash
+eas build:configure
+```
+
+## Output
+
+- **Cloud build:** Download the APK/AAB from the Expo build page after the build completes.
+- **Local build:** The APK/AAB will be generated on your local machine, and the build output will display its location.a

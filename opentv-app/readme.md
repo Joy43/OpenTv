@@ -38,11 +38,11 @@ We have extracted **1091+ World Cup IPTV channels** with logos and stream URLs!
 ## 📱 Screenshots
 
 <p align="center">
-  <img src="screenshots/add-playlist.jpg" width="200" alt="Add Playlist" />
-  <img src="screenshots/channels.jpg" width="200" alt="Channels" />
-  <img src="screenshots/categories.jpg" width="200" alt="Categories" />
-  <img src="screenshots/favorites.jpg" width="200" alt="Favorites" />
-  <img src="screenshots/settings.jpg" width="200" alt="Settings" />
+  <img src="screenshots/1.png" width="200" alt="Add Playlist" />
+  <img src="screenshots/2.png" width="200" alt="Channels" />
+  <img src="screenshots/3.png" width="200" alt="Categories" />
+  <img src="screenshots/4.jpg" width="200" alt="Favorites" />
+  <img src="screenshots/5.png" width="200" alt="Settings" />
 </p>
 
 <p align="center">
