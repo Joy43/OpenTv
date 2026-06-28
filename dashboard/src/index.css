@@ -1,16 +1,16 @@
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap');
 
 :root {
-  --bg-color: #0b0f19;
-  --panel-bg: rgba(20, 27, 45, 0.65);
-  --panel-border: rgba(255, 255, 255, 0.08);
-  --text-primary: #f8fafc;
-  --text-secondary: #94a3b8;
-  --accent-color: #6366f1;
-  --accent-hover: #4f46e5;
-  --accent-gradient: linear-gradient(135deg, #6366f1 0%, #a855f7 100%);
-  --success: #10b981;
-  --danger: #ef4444;
+  --bg-color: #141414;
+  --panel-bg: rgba(31, 31, 31, 0.85);
+  --panel-border: rgba(255, 255, 255, 0.1);
+  --text-primary: #FFFFFF;
+  --text-secondary: #B3B3B3;
+  --accent-color: #E50914;
+  --accent-hover: #F5222D;
+  --accent-gradient: linear-gradient(135deg, #E50914 0%, #830B12 100%);
+  --success: #10B981;
+  --danger: #EF4444;
 }
 
 * {
@@ -27,8 +27,8 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
   background-image: 
-    radial-gradient(circle at 15% 50%, rgba(99, 102, 241, 0.15), transparent 25%),
-    radial-gradient(circle at 85% 30%, rgba(168, 85, 247, 0.15), transparent 25%);
+    radial-gradient(circle at 15% 50%, rgba(229, 9, 20, 0.15), transparent 25%),
+    radial-gradient(circle at 85% 30%, rgba(229, 9, 20, 0.1), transparent 25%);
   background-attachment: fixed;
 }
 

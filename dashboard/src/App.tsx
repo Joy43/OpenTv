@@ -1,100 +1,122 @@
+import React, { useState } from 'react';
+import { useDispatch, useSelector } from 'react-redux';
+import type { RootState } from './store';
+import { setCredentials, logout } from './store/slices/authSlice';
+import { useLoginMutation } from './store/api/authApi';
+import Overview from './components/Overview';
+import Projects from './components/Projects';
+import Channels from './components/Channels';
+import dashboardIcon from './assets/icon.png';
 import './App.css';
 
 function App() {
+  const dispatch = useDispatch();
+  const token = useSelector((state: RootState) => state.auth.token);
+  const user = useSelector((state: RootState) => state.auth.user);
+  
+  const [login, { isLoading: isLoggingIn, error: loginError }] = useLoginMutation();
+
+  const [email, setEmail] = useState('superadmin@gmail.com');
+  const [password, setPassword] = useState('superadmin12345');
+
+  const [activeTab, setActiveTab] = useState<'dashboard' | 'projects' | 'channels'>('dashboard');
+
+  const handleLogin = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      const result = await login({ email, password }).unwrap();
+      if (result.success && result.data.accessToken) {
+        dispatch(setCredentials({ 
+          user: { id: '1', email, role: 'ADMIN', status: 'ACTIVE' }, 
+          token: result.data.accessToken 
+        }));
+      }
+    } catch (err) {
+      console.error('Login failed', err);
+    }
+  };
+
+  const handleLogout = () => {
+    dispatch(logout());
+  };
+
+  if (!token) {
+    return (
+      <div className="dashboard-container" style={{ justifyContent: 'center', alignItems: 'center' }}>
+        <div className="glass-panel" style={{ width: 400, padding: 30, textAlign: 'center' }}>
+          <h2>Admin Login</h2>
+          <form onSubmit={handleLogin} style={{ display: 'flex', flexDirection: 'column', gap: 15, marginTop: 20 }}>
+            <input 
+              type="email" 
+              placeholder="Email" 
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              className="styled-input"
+            />
+            <input 
+              type="password" 
+              placeholder="Password" 
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              className="styled-input"
+            />
+            {loginError && <p style={{ color: 'var(--accent-red)' }}>Login failed. Please check credentials.</p>}
+            <button type="submit" className="btn btn-primary" disabled={isLoggingIn}>
+              {isLoggingIn ? 'Logging in...' : 'Login'}
+            </button>
+          </form>
+        </div>
+      </div>
+    );
+  }
+
   return (
     <div className="dashboard-container">
       {/* Sidebar */}
       <aside className="sidebar">
-        <div className="brand">
-          <div className="brand-icon">TV</div>
-          <span className="gradient-text">OpenTV Admin</span>
+        <div className="brand" style={{ display: 'flex', alignItems: 'center', gap: '15px' }}>
+          <img src={dashboardIcon} alt="OpenTV Icon" style={{ width: '40px', height: '40px', borderRadius: '10px' }} />
+          <span className="gradient-text" style={{ fontSize: '1.2rem', fontWeight: 'bold' }}>OpenTV Admin</span>
         </div>
         
         <nav className="nav-links">
-          <div className="nav-item active">
+          <div 
+            className={`nav-item ${activeTab === 'dashboard' ? 'active' : ''}`}
+            onClick={() => setActiveTab('dashboard')}
+          >
             <span>Dashboard</span>
           </div>
-          <div className="nav-item">
+          <div 
+            className={`nav-item ${activeTab === 'projects' ? 'active' : ''}`}
+            onClick={() => setActiveTab('projects')}
+          >
             <span>Projects</span>
           </div>
-          <div className="nav-item">
+          <div 
+            className={`nav-item ${activeTab === 'channels' ? 'active' : ''}`}
+            onClick={() => setActiveTab('channels')}
+          >
             <span>Channels</span>
           </div>
-          <div className="nav-item">
-            <span>Analytics</span>
-          </div>
-          <div className="nav-item">
-            <span>Settings</span>
+         
+          
+          <div className="nav-item" onClick={handleLogout} style={{ cursor: 'pointer', marginTop: 'auto' }}>
+            <span style={{ color: 'var(--accent-red)' }}>Logout</span>
           </div>
         </nav>
       </aside>
 
       {/* Main Content */}
       <main className="main-content">
-        <header className="header">
-          <div>
-            <h1>Overview</h1>
-            <p style={{ color: 'var(--text-secondary)', marginTop: '8px' }}>
-              Welcome back to your OpenTV dashboard.
-            </p>
-          </div>
-          <div className="user-profile">
-            <span style={{ fontWeight: 500 }}>Admin User</span>
-            <div className="avatar"></div>
-          </div>
-        </header>
+        <div className="user-profile" style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '20px' }}>
+          <span style={{ fontWeight: 500, marginRight: '15px' }}>{user?.email || 'Admin'}</span>
+          <div className="avatar"></div>
+        </div>
 
-        {/* Stats Section */}
-        <section className="stats-grid">
-          <div className="glass-panel stat-card">
-            <span className="stat-title">Total Users</span>
-            <span className="stat-value">24,592</span>
-            <span className="stat-change positive">↑ 12.5% this month</span>
-          </div>
-          <div className="glass-panel stat-card">
-            <span className="stat-title">Active Streams</span>
-            <span className="stat-value">1,204</span>
-            <span className="stat-change positive">↑ 4.2% today</span>
-          </div>
-          <div className="glass-panel stat-card">
-            <span className="stat-title">Server Load</span>
-            <span className="stat-value">42%</span>
-            <span className="stat-change negative">↓ 2.1% this hour</span>
-          </div>
-          <div className="glass-panel stat-card">
-            <span className="stat-title">Revenue</span>
-            <span className="stat-value">$12,450</span>
-            <span className="stat-change positive">↑ 8.4% this month</span>
-          </div>
-        </section>
+        {activeTab === 'dashboard' && <Overview />}
+        {activeTab === 'projects' && <Projects />}
+        {activeTab === 'channels' && <Channels />}
 
-        {/* Recent Activity */}
-        <section className="glass-panel recent-activity">
-          <h2>Recent Activity</h2>
-          <div className="activity-list">
-            <div className="activity-item">
-              <div className="activity-info">
-                <span className="activity-name">New project "Live Sports Hub" created</span>
-                <span className="activity-time">2 minutes ago</span>
-              </div>
-              <span className="status-badge active">Active</span>
-            </div>
-            <div className="activity-item">
-              <div className="activity-info">
-                <span className="activity-name">User @john_doe upgraded to Premium</span>
-                <span className="activity-time">1 hour ago</span>
-              </div>
-              <span className="status-badge active">Completed</span>
-            </div>
-            <div className="activity-item">
-              <div className="activity-info">
-                <span className="activity-name">Server maintenance scheduled for US-East</span>
-                <span className="activity-time">5 hours ago</span>
-              </div>
-              <span className="status-badge pending">Pending</span>
-            </div>
-          </div>
-        </section>
       </main>
     </div>
   );
